@@ -9,8 +9,8 @@
   },
   "keywords": [
     "book",
-    "store",
-    "customer"
+    "bookshelf",
+    "user"
   ],
   "author": "Furkan AKTAŞ",
   "license": "ISC",
@@ -24,6 +24,7 @@
     "express-session": "^1.17.3",
     "express-validator": "^6.14.1",
     "flat": "^5.0.2",
+    "json-stringify-safe": "^5.0.1",
     "mongoose": "^6.3.5",
     "nodemon": "^2.0.15"
   }

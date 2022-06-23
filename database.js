@@ -20,15 +20,13 @@ const ConnectDB = async () => {
     });
 };
 
-
 const createUser = async (req, res) => {
     try {
-        const user = await User.create(req.body);
-        console.log(req.body.email ,": user created");
+        const user = await User.create(req.headers);
+        console.log(req.headers.email ,": user created");
         return res.status(200).json({
             user: user,
             message: 'create user success',
-
         });
     } catch (error) {
         const errors = validationResult(req);
@@ -40,16 +38,17 @@ const createUser = async (req, res) => {
     }
 };
 
-const getUser = async (req, res) => {
+const getUser = async (email) => {
     try {
-        const { email } = req.body;
+        console.log('gelen body', email);
         const user = await User.findOne({ email });
+        console.log('user', user);
         return user;
         
     } catch (error) {
         return {
             message: 'get user fail',
-            status: 200,
+            status: 400,
             error,
         };
     }
@@ -57,8 +56,18 @@ const getUser = async (req, res) => {
 
 const deleteUser = async (req, res) => {
     try {
-        const { email } = req.body;
-        await User.remove({ email });
+        const { email } = req.headers;
+        console.log('deleted mail ', email);
+        const user = await User.findOne({ email });
+        console.log('buradad ', user._id.toString());
+        User.findByIdAndDelete(`${user._id.toString()}`, (err, docs) => {
+            if (err){
+                console.log(err)
+            }
+            else{
+                console.log("Deleted : ", docs);
+            }
+        });
         return res.status(200).json({
             message: 'delete user success',
         });
@@ -73,20 +82,14 @@ const deleteUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
     try {
+        console.log("log içerisi:",req.body);
         const { email, password } = req.body;
         const user = await User.findOne({ email });
-        //! token id almaya çalışıyoz
-        const sessionList = await getSessionId(user._id.toString());
         if (user) {
             bcrypt.compare(password, user.password, (err, same) => {
-                console.log('req.ses: ', req.session);
                 if (same) {
-                    req.session.userID = user._id;
-                    const session = sessionList[sessionList.length-1];
-                    console.log('tokenID: ', session._id.toString());
                     return res.status(200).json({
                         message: 'login success',
-                        token: session._id.toString()
                     });
                 }
             });
@@ -101,12 +104,12 @@ const loginUser = async (req, res) => {
 
 const logOutUser = async (req, res) => {
     try {
-        req.session.destroy(() => {
+        // req.session.destroy(() => {
             return res.status(200).json({
                 message: 'log out success',
             });
             // res.redirect('/');
-        });
+        // });
         
     } catch (error) {
         return res.status(400).json({
@@ -115,18 +118,5 @@ const logOutUser = async (req, res) => {
     }
 };
 
-const getSessionId = async (userID) => {
-    const url = `mongodb://${process.env.DB_USER_NAME}:${process.env.DB_PASSWORD}`;
-    const client = new MongoClient(url);
-    const dbName = `${process.env.DB_DATABASE}`;
-    await client.connect();
-    const db = client.db(dbName);
-    const collection = db.collection('sessions');
-    const sessionList = await collection.find({session : `{"cookie":{"originalMaxAge":null,"expires":null,"httpOnly":true,"path":"/"},"userID":"${userID}"}`}).toArray();
-    // /burada yımmmmmmmmmm.
-    if(sessionList.length == 0) sessionList.push({token: 'faFAmht9413'});
-
-    return sessionList;
-}
 
 module.exports = { ConnectDB, createUser, getUser, loginUser, logOutUser, deleteUser };
