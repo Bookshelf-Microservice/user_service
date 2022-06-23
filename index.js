@@ -1,9 +1,6 @@
 const express = require("express");
-const session = require("express-session");
-const MongoStore = require("connect-mongo");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const stringify = require('json-stringify-safe');
 
 const dotenv = require("dotenv");
 const db = require("./database");
@@ -40,30 +37,20 @@ app.post("/login", async (req, res) => {
 });
 
 app.post("/signup", async (req, res) => {
-    console.log('req.headers:', req.headers);
-    // console.log('\n\n:');
-    // console.log('req.body:', req.body);
-    var result = await db.createUser(req, res);
-    // console.log(result);
-    
-    // console.log(stringify(result, null, 2));
-    // result = stringify(result, null, 2);
-    // res.send(result);
 
+    console.log('req.headers:', req.headers);
+    var result = await db.createUser(req, res);
 });
 
 app.post("/logout", async (req, res) => {
+
     const result = await db.logOutUser(req, res);
-    // console.log(result);
-    // res.send(result);
 });
 
 app.post("/delete", async (req, res) => {
+    
     const result = await db.deleteUser(req, res);
-    // console.log('/delete: ',result);
-    // res.send(result);
 });
-
 
 app.listen(PORT, async () => {
     await db.ConnectDB();

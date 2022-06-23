@@ -19,10 +19,6 @@ const UserSchema = new Schema({
         enum: ['user', 'admin'],
         default: 'user'
     }, 
-    // courses: [{
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'Course'
-    // }]
 });
 
 UserSchema.pre("save", function (next) {
